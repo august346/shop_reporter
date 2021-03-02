@@ -1,0 +1,4 @@
+import os
+
+SQLALCHEMY_DATABASE_URI: str = os.environ.get('DATABASE_URL')
+SQLALCHEMY_TRACK_MODIFICATIONS = False
