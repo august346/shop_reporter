@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from uuid import uuid4, UUID
 
 from flask import Blueprint, request
 from flask_restful import Api, Resource

@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Column, String
+from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import UUID
 
 from db import db, ChoiceType
