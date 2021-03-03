@@ -10,9 +10,18 @@ services:
     ports:
       - "5000:80"
     links:
-      - "api_db:api_db"
+      - "api-db:api-db"
+      - "api-process:api-process"
 
-  api_db:
+  api-process:
+    build: ./apps/api_process
+    restart: always
+    env_file:
+      - apps/api_process/.env
+    links:
+      - "api-db:api-db"
+
+  api-db:
     build: ./apps/api_db
     restart: always
     env_file:

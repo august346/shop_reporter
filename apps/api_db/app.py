@@ -1,6 +1,4 @@
-from http import HTTPStatus
-
-from flask import Flask, jsonify
+from flask import Flask
 
 from db import db
 
@@ -12,13 +10,7 @@ app.register_blueprint(task_bp)
 db.init_app(app)
 
 with app.app_context():
-    from models import Task
     db.create_all()
-
-
-@app.route('/')
-def index():
-    return jsonify({'status': 'ok'}), HTTPStatus.OK
 
 
 if __name__ == '__main__':

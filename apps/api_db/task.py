@@ -17,6 +17,12 @@ class Task(Resource):
         t: models.Task = models.Task.query.get(task_id)
         return t.as_dict()
 
+    def patch(self, task_id: str):
+        t: models.Task = models.Task.query.get(task_id)
+        t.status = request.json["status"]
+        models.db.session.commit()
+        return t.as_dict(), HTTPStatus.OK
+
 
 class TaskList(Resource):
     def post(self):
