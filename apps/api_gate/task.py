@@ -9,22 +9,23 @@ task_bp = Blueprint('tasks', __name__, url_prefix='/tasks')
 api = Api(task_bp)
 
 
-class Task(Resource):
+class TaskResource(Resource):
+    @property
+    def db_tasks_url(self):
+        return current_app.config['DB_TASKS']
+
+
+class Task(TaskResource):
+
     def get(self, task_id: str):
-        rsp: Response = requests.get(f'{current_app.config["DB_URL"]}/tasks/{task_id}')
+        rsp: Response = requests.get(f'{self.db_tasks_url}/{task_id}')
         return rsp.json()
 
 
-class TaskList(Resource):
+class TaskList(TaskResource):
     def post(self):
-        rsp: Response = requests.post(f'{current_app.config["DB_URL"]}/tasks/', json=request.json)
-        assert rsp.status_code == HTTPStatus.CREATED, rsp.status_code
-        task_id: str = rsp.json()
-
-        rsp: Response = requests.post(f'{current_app.config["PROCESS_URL"]}/tasks/{task_id}/')
-        assert rsp.status_code == 204, rsp.status_code
-
-        return task_id, HTTPStatus.CREATED
+        rsp: Response = requests.post(self.db_tasks_url, json=request.json)
+        return rsp.json(), rsp.status_code
 
 
 api.add_resource(TaskList, '/')

@@ -5,27 +5,18 @@ services:
   api-gate:
     build: ./apps/api_gate
     restart: always
-    env_file:
-      - apps/api_gate/.env
+    environment:
+      DB_TASKS: "http://api-db/tasks/"
     ports:
       - "5000:80"
-    links:
-      - "api-db:api-db"
-      - "api-process:api-process"
-
-  api-process:
-    build: ./apps/api_process
-    restart: always
-    env_file:
-      - apps/api_process/.env
     links:
       - "api-db:api-db"
 
   api-db:
     build: ./apps/api_db
     restart: always
-    env_file:
-      - apps/api_db/.env
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@db/shop"
     links:
       - "db:db"
 
