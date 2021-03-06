@@ -1,5 +1,3 @@
-from http import HTTPStatus
-
 import requests
 from flask import Blueprint, request, current_app
 from flask_restful import Api, Resource

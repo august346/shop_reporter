@@ -2,25 +2,18 @@ version: '3.1'
 
 services:
 
-  api-gate:
-    build: ./apps/api_gate
+  rabbitmq:
+    image: rabbitmq
     restart: always
     environment:
-      DB_TASKS: "http://api-db/tasks/"
-    ports:
-      - "5000:80"
-    links:
-      - "api-db:api-db"
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=mypass
 
-  api-db:
-    build: ./apps/api_db
+  redis:
+    image: redis
     restart: always
-    environment:
-      DATABASE_URL: "postgresql://postgres:postgres@db/shop"
-    links:
-      - "db:db"
 
-  db:
+  postgres:
     image: postgres
     restart: always
     environment:
@@ -34,6 +27,35 @@ services:
     restart: always
     ports:
       - 8080:8080
+
+  api-gate:
+    build: ./apps/api_gate
+    restart: always
+    environment:
+      DB_TASKS: "http://api-db/tasks/"
+    ports:
+      - 5000:80
+    links:
+      - "api-db:api-db"
+
+  api-db:
+    build: ./apps/api_db
+    restart: always
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@postgres/shop"
+    links:
+      - "postgres:postgres"
+
+  celery:
+    build: ./apps/celery
+    restart: always
+    environment:
+      BROKER_URL: "amqp://admin:mypass@rabbitmq:5672//"
+      RESULT_BACKEND: "redis://redis:6379/0"
+      C_FORCE_ROOT: "true"
+    links:
+      - "rabbitmq:rabbitmq"
+      - "redis:redis"
 
 #volumes:
 #  db_volume:
