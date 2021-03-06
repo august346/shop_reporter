@@ -17,13 +17,23 @@ class Task(Resource):
         return t.as_dict()
 
     def patch(self, task_id: str):
-        t: models.Task = models.Task.query.get(task_id)
-        t.status = request.json["status"]
+        counter = (
+            models.Task.query
+            .filter_by(id=task_id, **request.json['filter'])
+            .update(request.json['update'])
+        )
+        # counter = models.db.session.execute(query)
         models.db.session.commit()
-        return t.as_dict(), HTTPStatus.OK
+        return counter, HTTPStatus.OK
 
 
 class TaskList(Resource):
+    def get(self):
+        return list(map(
+            lambda t: t.as_dict(),
+            models.Task.query.filter_by(**request.json['filter'])
+        ))
+
     def post(self):
         t = models.Task(**request.json)
         models.db.session.add(t)
