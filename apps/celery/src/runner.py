@@ -33,19 +33,19 @@ class Runner:
         return MongoClient(MONGO_URL).get_database(MONGO_DB).get_collection(self.task.doc_type)
 
     def run(self):
-        ids = {}
+        ids = []
         rows = []
 
-        for i, row in enumerate(self.rows_getter(self.task.date_from, self.task.date_to)):
+        for row in self.rows_getter(self.task.date_from, self.task.date_to):
             rows.append(row)
-            ids[row[self.id_key]] = i
+            ids.append(row[self.id_key])
 
         inserted_id = self.collection.insert_one(self.get_document(rows)).inserted_id
 
         updates = {}
-        for _id, upd in self.get_updates(*ids):
-            for key, value in upd.items():
-                updates[f'rows.{ids[_id]}.{key}'] = value
+        for ind, _id in enumerate(ids):
+            for name, value in self.get_updates(_id).items():
+                updates[f'rows.{ind}.{name}'] = value
 
         self.collection.update_one({'_id': inserted_id}, {'$set': updates})
 
@@ -73,8 +73,13 @@ class TestRunner(Runner):
 
     def rows_getter(self, *args):
         for i in range(10):
-            yield {'id': i, 'data': f'test_#{i}'}
+            yield {
+                'id': i,
+                'data': f'test_#{i}'
+            }
 
-    def get_updates(self, *ids):
-        for _id in ids:
-            yield _id, {'name': f'name_#{_id}'}
+    def get_updates(self, _id):
+        return {
+            'name': f'name_#{_id}',
+            'not_name': f'not_name_#{_id}',
+        }
