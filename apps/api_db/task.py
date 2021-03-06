@@ -1,3 +1,5 @@
+from copy import copy
+from datetime import date
 from http import HTTPStatus
 
 from flask import Blueprint, request
@@ -22,7 +24,6 @@ class Task(Resource):
             .filter_by(id=task_id, **request.json['filter'])
             .update(request.json['update'])
         )
-        # counter = models.db.session.execute(query)
         models.db.session.commit()
         return counter, HTTPStatus.OK
 
@@ -35,7 +36,11 @@ class TaskList(Resource):
         ))
 
     def post(self):
-        t = models.Task(**request.json)
+        t_info = copy(request.json)
+        for d_key in ('date_from', 'date_to'):
+            t_info[d_key] = date.fromisoformat(t_info[d_key])
+
+        t = models.Task(**t_info)
         models.db.session.add(t)
         models.db.session.commit()
         return str(t.id), HTTPStatus.CREATED

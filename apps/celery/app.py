@@ -1,9 +1,11 @@
-from dataclasses import dataclass
+from datetime import date
 from logging import Logger
 from os import environ
 
 import requests
 from celery import Celery
+
+from src.task import Task
 
 environ.setdefault('CELERY_CONFIG_MODULE', 'config')
 
@@ -23,16 +25,11 @@ def run_new():
     return len(tasks)
 
 
-@dataclass
-class Task:
-    id: str
-    platform: str
-    doc_type: str
-    status: str
-
-
 @app.task
 def execute(task_info: dict):
+    for d_key in ('date_from', 'date_to'):
+        task_info[d_key] = date.fromisoformat(task_info[d_key])
+
     task: Task = Task(**task_info)
     return requests.patch(f'{app.conf["DB_TASKS"]}/{task.id}/', json={
         'filter': {'status': 'init'},

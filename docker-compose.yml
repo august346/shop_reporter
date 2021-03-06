@@ -6,8 +6,8 @@ services:
     image: rabbitmq
     restart: always
     environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=mypass
+      RABBITMQ_DEFAULT_USER: "admin"
+      RABBITMQ_DEFAULT_PASS: "mypass"
 
   redis:
     image: redis
@@ -17,10 +17,10 @@ services:
     image: postgres
     restart: always
     environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: shop
-    volumes:
-      - ./db_volume:/var/lib/postgresql/data
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "shop"
+#    volumes:
+#      - ./db_volume:/var/lib/postgresql/data
 
   adminer:
     image: adminer
