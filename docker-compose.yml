@@ -72,6 +72,7 @@ services:
       DB_TASKS: "http://api-db/tasks/"
       MONGO_URL: "mongodb://root:example@mongo:27017/"
       MONGO_DB: "docs"
+      WB_API_KEY: "api_token"
     links:
       - "rabbitmq:rabbitmq"
       - "redis:redis"
