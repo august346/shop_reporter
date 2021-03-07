@@ -5,7 +5,7 @@ from os import environ
 import requests
 from celery import Celery
 
-from src.runner import Runner
+from src.runner import get_runner
 from task import Task
 
 environ.setdefault('CELERY_CONFIG_MODULE', 'config')
@@ -33,16 +33,18 @@ def execute(task_info: dict):
 
     task: Task = Task(**task_info)
 
-    runner: Runner = Runner.get_runner(task)
+    runner = get_runner(task)
 
-    requests.patch(f'{app.conf["DB_TASKS"]}/{task.id}/', json={
+    task_url = f'{app.conf["DB_TASKS"]}/{task.id}/'
+
+    requests.patch(task_url, json={
         'filter': {'status': 'init'},
         'update': {'status': 'process'}
     }).json()
 
     runner.run()
 
-    return requests.patch(f'{app.conf["DB_TASKS"]}/{task.id}/', json={
+    return requests.patch(task_url, json={
         'filter': {'status': 'process'},
         'update': {'status': 'complete'}
     }).json()
