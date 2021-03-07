@@ -7,7 +7,7 @@ from pymongo import MongoClient
 from pymongo.collection import Collection
 
 from src.rows_getter import WbRowsGetter, RowsGetter
-from src.task import Task
+from task import Task
 from src.updater import Updater, WbUpdater
 
 __all__ = ['Runner']
@@ -21,8 +21,8 @@ def to_datetime(date):
 
 class Runner:
     id_key: str
-    rows_getter: Type[RowsGetter]
-    updates_getter: Type[Updater]
+    get_rows: Type[RowsGetter]
+    get_row_updates: Type[Updater]
 
     @staticmethod
     def get_runner(task: Task) -> 'Runner':
@@ -42,7 +42,7 @@ class Runner:
         ids = []
         rows = []
 
-        for row in self.rows_getter(to_datetime(self.task.date_from), to_datetime(self.task.date_to))():
+        for row in self.get_rows(to_datetime(self.task.date_from), to_datetime(self.task.date_to))():
             ids.append(row[self.id_key])
             rows.append(row)
 
@@ -50,7 +50,7 @@ class Runner:
 
         updates = {}
         for ind, _id in enumerate(ids):
-            for name, value in self.updates_getter(_id)().items():
+            for name, value in self.get_row_updates(_id)().items():
                 updates[f'rows.{ind}.{name}'] = value
 
         self.collection.update_one({'_id': inserted_id}, {'$set': updates})
@@ -93,5 +93,5 @@ class TestRunner(Runner):
 
 class WbRunner(Runner):
     id_key = 'nm_id'
-    rows_getter = WbRowsGetter
-    updates_getter = WbUpdater
+    get_rows = WbRowsGetter
+    get_row_updates = WbUpdater

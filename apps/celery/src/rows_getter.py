@@ -1,9 +1,10 @@
 import os
 import time
 from datetime import datetime
-from typing import Iterable, List
+from typing import List
 
 import requests
+from requests import Response
 
 
 class RowsGetter:
@@ -12,13 +13,6 @@ class RowsGetter:
         self.date_to = date_to
 
     def __call__(self):
-        return self.aggregate(self.payloads)
-
-    def aggregate(self, payloads: Iterable[dict]) -> List[dict]:
-        raise NotImplementedError
-
-    @property
-    def payloads(self):
         raise NotImplementedError
 
 
@@ -28,51 +22,64 @@ class WbRowsGetter(RowsGetter):
     sleep_between: int = 1
     common_keys = ('nm_id', 'barcode', 'sa_name')
     unique_keys = (
-        'realizationreport_id', 'order_dt', 'supplier_reward', 'supplier_oper_name', 'quantity', 'delivery_rub'
+        'realizationreport_id', 'order_dt', 'sale_dt', 'supplier_reward', 'supplier_oper_name', 'quantity',
+        'delivery_rub'
     )
+    datetime_keys = ('order_dt', 'sale_dt',)
 
-    def aggregate(self, payloads: Iterable[dict]) -> List[dict]:
+    def __call__(self):
+        return self.aggregated
+
+    @property
+    def aggregated(self) -> List[dict]:
         result = {}
 
-        for data in payloads:
+        for data in self.payloads:
             barcode = data['barcode']
 
             if barcode not in result:
-                result[barcode] = {
-                    k: data[k]
-                    for k in self.common_keys
-                }
-                result[barcode]['payloads'] = []
+                result[barcode] = self.get_common_fields(data)
+                result[barcode]['reports'] = []
 
-            result[barcode]['payloads'].append({
-                key: data[key]
-                for key in self.unique_keys
-            })
+            result[barcode]['reports'].append(self.get_unique_fields(data))
 
         return list(result.values())
+
+    def get_common_fields(self, data: dict):
+        return {k: data[k] for k in self.common_keys}
+
+    def get_unique_fields(self, data: dict):
+        result = {k: data[k] for k in self.unique_keys}
+
+        for key in self.datetime_keys:
+            result[key] = datetime.fromisoformat(result[key])
+
+        return result
 
     @property
     def payloads(self):
         _id = 0
 
         while _id is not None:
-            rsp = requests.get(
-                self.url,
-                params=dict(
-                    key=self.api_key,
-                    limit=1000,
-                    rrdid=_id,
-                    dateFrom=self.date_from.isoformat(),
-                    dateto=self.date_to.isoformat()
-                )
-            )
-            payload = rsp.json()
+            json = self.do_request(_id).json()
 
-            if not payload:
+            if not json:
                 return
 
-            yield from payload
+            yield from json
 
-            _id = max([p['rrd_id'] for p in payload])
+            _id = max([p['rrd_id'] for p in json])
 
             time.sleep(self.sleep_between)
+
+    def do_request(self, _id) -> Response:
+        return requests.get(
+            self.url,
+            params=dict(
+                key=self.api_key,
+                limit=1000,
+                rrdid=_id,
+                dateFrom=self.date_from.date().isoformat(),
+                dateTo=self.date_to.date().isoformat()
+            )
+        )

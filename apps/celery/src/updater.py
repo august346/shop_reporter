@@ -13,10 +13,10 @@ class Updater:
         if self.getters is None:
             raise NotImplementedError
 
-        return {
-            get.name: get(self.id)()
-            for get in self.getters
-        }
+        return dict(map(
+            lambda getter: getter(self.id)(),
+            self.getters
+        ))
 
 
 class WbUpdater(Updater):

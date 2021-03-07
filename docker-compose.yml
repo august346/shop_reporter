@@ -3,11 +3,13 @@ version: '3.1'
 services:
 
   rabbitmq:
-    image: rabbitmq
+    image: rabbitmq:3-management
     restart: always
     environment:
       RABBITMQ_DEFAULT_USER: "admin"
       RABBITMQ_DEFAULT_PASS: "mypass"
+    ports:
+      - 15672:15672
 
   redis:
     image: redis
@@ -19,8 +21,8 @@ services:
     environment:
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_DB: "shop"
-#    volumes:
-#      - ./db_volume:/var/lib/postgresql/data
+    volumes:
+      - ./tmp/db_volume:/var/lib/postgresql/data
 
   mongo:
     image: mongo
@@ -28,6 +30,19 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - 27017:27017
+
+  minio:
+    image: minio/minio
+    ports:
+      - 9000:9000
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    command: server /data
+    volumes:
+      - ./tmp/minio:/data
 
   mongo-express:
     image: mongo-express
@@ -72,12 +87,10 @@ services:
       DB_TASKS: "http://api-db/tasks/"
       MONGO_URL: "mongodb://root:example@mongo:27017/"
       MONGO_DB: "docs"
-      WB_API_KEY: "api_token"
+    env_file:
+      - ./apps/celery/.env
     links:
       - "rabbitmq:rabbitmq"
       - "redis:redis"
       - "api-db:api-db"
       - "mongo:mongo"
-
-#volumes:
-#  db_volume:

@@ -6,7 +6,7 @@ import requests
 from celery import Celery
 
 from src.runner import Runner
-from src.task import Task
+from task import Task
 
 environ.setdefault('CELERY_CONFIG_MODULE', 'config')
 

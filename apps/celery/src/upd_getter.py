@@ -1,40 +1,39 @@
 import time
-from functools import wraps, lru_cache
-from typing import Tuple, Any
+from functools import wraps, lru_cache, partial
+from typing import Tuple, Any, Callable
 
 import requests
 from bs4 import BeautifulSoup
 
 
-def paused(seconds: float = 1):
-    def decorator(f):
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            await_time = time.time()
+def paused(f: Callable = None, seconds: float = 1):
+    if not f:
+        return partial(paused, seconds=seconds)
 
-            if wrapper.previous_timestamp:
-                await_time = wrapper.previous_timestamp + seconds
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        await_time = time.time()
 
-            while await_time > time.time():
-                time.sleep(0.1)
+        if wrapper.previous_timestamp:
+            await_time = wrapper.previous_timestamp + seconds
 
-            result = f(*args, **kwargs)
+        while await_time > time.time():
+            time.sleep(0.1)
 
-            wrapper.previous_timestamp = time.time()
+        result = f(*args, **kwargs)
 
-            return result
+        wrapper.previous_timestamp = time.time()
 
-        wrapper.previous_timestamp = None
+        return result
 
-        return wrapper
+    wrapper.previous_timestamp = None
 
-    return decorator
+    return wrapper
 
 
 class UpdGetter:
     name: str = None
 
-    @lru_cache(maxsize=5000)
     def __init__(self, _id: str):
         self.id = _id
 
@@ -42,7 +41,7 @@ class UpdGetter:
         if not isinstance(self.name, str):
             raise NotImplementedError
 
-        return self.value
+        return self.name, self.value
 
     @property
     def value(self):
@@ -54,22 +53,24 @@ class WbNameGetter(UpdGetter):
 
     @property
     def value(self):
-        return self.get_name()
+        return self.get_name(self.id)
 
-    def get_name(self):
-        tag = self.soup.find(
+    @staticmethod
+    @lru_cache(maxsize=5000)
+    @paused(seconds=1)
+    def get_name(_id):
+        tag = WbNameGetter.get_soup(_id).find(
             'span',
             {'class': 'name'}
         )
         if tag:
-            time.sleep(1)
             return text.strip() if (text := tag.text) else text
         raise ValueError('No span_class_name in response!')
 
-    @property
-    def soup(self):
+    @staticmethod
+    def get_soup(_id):
         rsp = requests.get(
-            f'https://www.wildberries.ru/catalog/{self.id}/detail.aspx',
+            f'https://www.wildberries.ru/catalog/{_id}/detail.aspx',
             headers={
                 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) '
                               'Chrome/39.0.2171.95 Safari/537.36 '
