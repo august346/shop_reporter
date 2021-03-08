@@ -9,7 +9,7 @@ import requests
 from bs4 import BeautifulSoup
 from requests import Response
 
-from utils import Report, paused
+from src.utils import Report, paused
 
 
 class Collector:

@@ -3,9 +3,9 @@ from datetime import datetime
 import requests
 from requests import Response
 
-from celery_app import app
-from shop.runner import get_runner
-from utils import Report, get_reports_url, assert_patch
+from src.celery_app import app
+from src.runner import get_runner
+from src.utils import Report, get_reports_url, assert_patch
 
 
 @app.task

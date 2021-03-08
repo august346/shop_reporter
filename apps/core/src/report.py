@@ -3,7 +3,7 @@ from http import HTTPStatus
 from flask import Blueprint
 from flask_restful import Api, Resource
 
-from mongo import Report
+from src.mongo import Report
 
 report_bp = Blueprint('reports', __name__, url_prefix='/reports')
 api = Api(report_bp)

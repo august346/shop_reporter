@@ -23,9 +23,9 @@ client = Minio(
     secure=False
 )
 
-for name in (MINIO_BUCKET_CLIENT, MINIO_BUCKET_RESPONSE):
-    if not client.bucket_exists(name):
-        client.make_bucket(name)
+for bucket_name in (MINIO_BUCKET_CLIENT, MINIO_BUCKET_RESPONSE):
+    if not client.bucket_exists(bucket_name):
+        client.make_bucket(bucket_name)
 
 
 def save_files() -> Dict[str, str]:
@@ -52,8 +52,8 @@ def save_files() -> Dict[str, str]:
     return files
 
 
-def get(_id: str):
+def get(file_id: str):
     try:
-        return client.get_object(MINIO_BUCKET_RESPONSE, _id)
+        return client.get_object(MINIO_BUCKET_RESPONSE, file_id)
     except S3Error:
-        return abort(404)
+        return None

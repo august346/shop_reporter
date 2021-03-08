@@ -1,9 +1,10 @@
 from http import HTTPStatus
 
+import requests
 from flask import Flask, jsonify, Response
 
-import storage
-from report import report_bp
+from src import storage
+from src.report import report_bp
 
 
 app = Flask(__name__)
@@ -16,15 +17,25 @@ def index():
     return jsonify({'status': 'ok'}), HTTPStatus.OK
 
 
-@app.route('/document/<string:_id>')
-def report(_id: str):
-    file_rsp = storage.get(_id)
+@app.route('/document/<string:report_id>')
+def report(report_id: str):
+    file_rsp = storage.get(report_id)
+
+    if file_rsp is None:
+        rsp: requests.Response = requests.post(get_gen_url(report_id))
+        assert rsp.status_code == HTTPStatus.OK, rsp.content.decode()
+
+        file_rsp = storage.get(rsp.json())
 
     return Response(
         file_rsp.stream(32 * 1024),
         headers=dict(file_rsp.headers),
         direct_passthrough=True
     )
+
+
+def get_gen_url(report_id: str):
+    return f'{app.config["CORE_REPORTS_URL"]}/{report_id}/'
 
 
 if __name__ == '__main__':

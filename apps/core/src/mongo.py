@@ -67,6 +67,9 @@ class Report:
         ))
 
     def get_project(self) -> dict:
+        if request.json and request.json.get('full'):
+            return {}
+
         return {k: 1 for k in ('state', 'platform', 'doc_type', 'date_from', 'date_to', 'files')}
 
     def prepare_json(self, document: Optional[dict]):

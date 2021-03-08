@@ -45,8 +45,18 @@ services:
     ports:
       - 5000:80
     links:
-      - core
       - minio
+      - core
+      - generator
+
+  generator:
+    build: apps/generator
+    restart: always
+    env_file:
+      .env
+    links:
+      - minio
+      - core
 
   core:
     build: apps/core
