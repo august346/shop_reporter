@@ -3,6 +3,8 @@ from flask import Blueprint, request, current_app
 from flask_restful import Api, Resource
 from requests import Response
 
+import storage
+
 task_bp = Blueprint('tasks', __name__, url_prefix='/tasks')
 api = Api(task_bp)
 
@@ -22,8 +24,15 @@ class Task(TaskResource):
 
 class TaskList(TaskResource):
     def post(self):
-        rsp: Response = requests.post(self.db_tasks_url, json=request.json)
-        return rsp.json(), rsp.status_code
+        json = {
+            k: request.form[k]
+            for k in ('platform', 'doc_type', 'date_from', 'date_to')
+        }
+        rsp: Response = requests.post(self.db_tasks_url, json=json)
+        _id = rsp.json()
+
+        storage.save(_id)
+        return _id, rsp.status_code
 
 
 api.add_resource(TaskList, '/')

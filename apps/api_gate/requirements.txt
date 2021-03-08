@@ -9,6 +9,7 @@ idna==2.10
 itsdangerous==1.1.0
 Jinja2==2.11.3
 MarkupSafe==1.1.1
+minio==7.0.2
 pytz==2021.1
 requests==2.25.1
 six==1.15.0
