@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import datetime
 from typing import List, Optional
 
 from bson import ObjectId
