@@ -1,16 +1,13 @@
 from flask import Flask
 
-from db import db
+import mongo
 
-from task import task_bp
+from report import report_bp
 
 app = Flask(__name__)
 app.config.from_object('config')
-app.register_blueprint(task_bp)
-db.init_app(app)
-
-with app.app_context():
-    db.create_all()
+app.register_blueprint(report_bp)
+mongo.connection.init_app(app)
 
 
 if __name__ == '__main__':

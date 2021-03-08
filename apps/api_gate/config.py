@@ -1,3 +1,3 @@
 import os
 
-DB_TASKS: str = os.environ["DB_TASKS"]
+CORE_REPORTS_URL: str = os.environ['CORE_REPORTS_URL']

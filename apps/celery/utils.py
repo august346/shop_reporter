@@ -2,17 +2,24 @@ import time
 from dataclasses import dataclass
 from datetime import datetime, date
 from functools import partial, wraps
-from typing import Callable
+from typing import Callable, Dict
+
+from celery_app import app
 
 
 @dataclass
-class Task:
-    id: str
+class Report:
+    _id: str
     platform: str
     doc_type: str
-    status: str
-    date_from: date
-    date_to: date
+    state: str
+    date_from: datetime
+    date_to: datetime
+    files: Dict[str, str]
+
+    @property
+    def id(self):
+        return self._id
 
 
 def paused(f: Callable = None, seconds: float = 1):
@@ -40,5 +47,5 @@ def paused(f: Callable = None, seconds: float = 1):
     return wrapper
 
 
-def to_datetime(date):
-    return datetime.combine(date, datetime.min.time())
+def get_reports_url():
+    return app.conf['CORE_REPORTS_URL']

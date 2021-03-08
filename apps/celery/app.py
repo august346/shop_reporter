@@ -1,41 +1,47 @@
-from datetime import date
+from datetime import datetime
+from http import HTTPStatus
 
 import requests
+from requests import Response
 
 from celery_app import app
 from shop.runner import get_runner
-from shop.utils import Task
+from utils import Report, get_reports_url
 
 
 @app.task
 def run_new():
-    tasks = requests.get(app.conf['DB_TASKS'], json={'filter': {'status': 'init'}}).json()
+    reports = requests.get(
+        get_reports_url(),
+        json={'filters': {'state': 'init'}}
+    ).json()
 
-    for t_info in tasks:
-        execute.delay(t_info)
+    for r in reports:
+        execute.delay(r)
 
-    return len(tasks)
+    return len(reports)
 
 
 @app.task
-def execute(task_info: dict):
+def execute(report_info: dict):
     for d_key in ('date_from', 'date_to'):
-        task_info[d_key] = date.fromisoformat(task_info[d_key])
+        report_info[d_key] = datetime.fromisoformat(report_info[d_key])
 
-    task: Task = Task(**task_info)
+    report: Report = Report(**report_info)
 
-    runner = get_runner(task)
+    runner = get_runner(report)
 
-    task_url = f'{app.conf["DB_TASKS"]}/{task.id}/'
+    task_url = f'{get_reports_url()}/{report.id}/'
 
-    requests.patch(task_url, json={
-        'filter': {'status': 'init'},
-        'update': {'status': 'process'}
-    }).json()
+    rsp: Response = requests.patch(task_url, json={
+        'filters': {'state': 'init'},
+        'updates': {'$set': {'state': 'process'}}
+    })
+    assert rsp.status_code == HTTPStatus.OK, rsp.content.decode()
 
     runner.run()
 
     return requests.patch(task_url, json={
-        'filter': {'status': 'process'},
-        'update': {'status': 'complete'}
+        'filters': {'state': 'process'},
+        'updates': {'$set': {'state': 'complete'}}
     }).json()

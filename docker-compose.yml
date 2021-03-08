@@ -14,19 +14,21 @@ services:
     image: redis
     restart: always
 
-  postgres:
-    image: postgres
-    restart: always
-    env_file:
-      .env
-    volumes:
-      - ./tmp/db_volume:/var/lib/postgresql/data
+#  postgres:
+#    image: postgres
+#    restart: always
+#    env_file:
+#      .env
+#    volumes:
+#      - ./tmp/db_volume:/var/lib/postgresql/data
 
   mongo:
     image: mongo
     restart: always
     env_file:
       .env
+    ports:
+    - 27017:27017
 
   minio:
     image: minio/minio
@@ -47,11 +49,11 @@ services:
     ports:
       - 8081:8081
 
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
+#  adminer:
+#    image: adminer
+#    restart: always
+#    ports:
+#      - 8080:8080
 
   api-gate:
     build: ./apps/api_gate
@@ -61,16 +63,18 @@ services:
     ports:
       - 5000:80
     links:
-      - api-db
+      - core
       - minio
 
-  api-db:
-    build: ./apps/api_db
+  core:
+    build: apps/core
     restart: always
+    ports:
+    - 5001:80
     env_file:
       .env
     links:
-      - postgres
+      - mongo
 
   celery:
     build: ./apps/celery
@@ -80,5 +84,4 @@ services:
     links:
       - rabbitmq
       - redis
-      - api-db
-      - mongo
+      - core

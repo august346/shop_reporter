@@ -1,16 +1,14 @@
 from http import HTTPStatus
 
 from flask import Flask, jsonify, Response
-from flask_restful import abort
-from minio import S3Error
 
 import storage
-from task import task_bp
+from report import report_bp
 
 
 app = Flask(__name__)
 app.config.from_object('config')
-app.register_blueprint(task_bp)
+app.register_blueprint(report_bp)
 
 
 @app.route('/')

@@ -1,11 +1,11 @@
-from os import environ
+import os
 
 timezone = 'UTC'
 
-broker_url = environ['BROKER_URL']
-result_backend = environ['RESULT_BACKEND']
+broker_url = os.environ['BROKER_URL']
+result_backend = os.environ['RESULT_BACKEND']
 
-DB_TASKS = environ['DB_TASKS']
+CORE_REPORTS_URL = os.environ['CORE_REPORTS_URL']
 
 beat_schedule = {
     'run-new-tasks': {

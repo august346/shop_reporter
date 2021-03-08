@@ -2,20 +2,21 @@ import os
 import time
 from datetime import datetime
 from functools import lru_cache
+from http import HTTPStatus
 from typing import List, Dict, Any, Iterable
 
 import requests
 from bs4 import BeautifulSoup
 from requests import Response
 
-from shop.utils import Task, paused
+from utils import Report, paused
 
 
 class Collector:
-    task: Task
+    report: Report
 
-    def __init__(self, task: Task):
-        self.task = task
+    def __init__(self, report: Report):
+        self.report = report
 
     def get_rows(self) -> List[dict]:
         raise NotImplementedError
@@ -82,7 +83,20 @@ class WbFinDoc(Collector):
         _id = 0
 
         while _id is not None:
-            json = self._do_request(_id).json()
+            rsp: Response = self._do_request(_id)
+
+            if rsp.status_code != HTTPStatus.OK:
+                import logging
+
+                logging.error((
+                    rsp,
+                    rsp.content.decode(),
+                        rsp.request,
+                    rsp.request.url
+                ))
+                raise AssertionError
+
+            json = rsp.json()
 
             if not json:
                 return
@@ -100,8 +114,8 @@ class WbFinDoc(Collector):
                 key=self.api_key,
                 limit=1000,
                 rrdid=_id,
-                dateFrom=self.task.date_from.isoformat(),
-                dateTo=self.task.date_to.isoformat()
+                dateFrom=self.report.date_from.date().isoformat(),
+                dateTo=self.report.date_to.date().isoformat()
             )
         )
 
