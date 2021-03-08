@@ -1,11 +1,18 @@
 import time
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import datetime, date
 from functools import partial, wraps
 from typing import Callable
 
 
-def to_datetime(date):
-    return datetime.combine(date, datetime.min.time())
+@dataclass
+class Task:
+    id: str
+    platform: str
+    doc_type: str
+    status: str
+    date_from: date
+    date_to: date
 
 
 def paused(f: Callable = None, seconds: float = 1):
@@ -31,3 +38,7 @@ def paused(f: Callable = None, seconds: float = 1):
     wrapper.previous_timestamp = None
 
     return wrapper
+
+
+def to_datetime(date):
+    return datetime.combine(date, datetime.min.time())

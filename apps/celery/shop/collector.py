@@ -8,8 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 from requests import Response
 
-from src import utils
-from task import Task
+from shop.utils import Task, paused
 
 
 class Collector:
@@ -113,7 +112,7 @@ class WbFinDoc(Collector):
 
     @staticmethod
     @lru_cache(maxsize=5000)
-    @utils.paused(seconds=1)
+    @paused(seconds=1)
     def _get_name(nm_id: str) -> 'str':
         tag = WbFinDoc._get_soup(nm_id).find(
             'span',

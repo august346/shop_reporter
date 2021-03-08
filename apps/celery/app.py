@@ -1,19 +1,10 @@
 from datetime import date
-from logging import Logger
-from os import environ
 
 import requests
-from celery import Celery
 
-from src.runner import get_runner
-from task import Task
-
-environ.setdefault('CELERY_CONFIG_MODULE', 'config')
-
-app = Celery()
-app.config_from_envvar('CELERY_CONFIG_MODULE')
-
-logger = Logger(__name__)
+from celery_app import app
+from shop.runner import get_runner
+from shop.utils import Task
 
 
 @app.task

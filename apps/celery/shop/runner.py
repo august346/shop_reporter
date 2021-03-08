@@ -1,14 +1,12 @@
 import os
-from collections import defaultdict
 from functools import cached_property
 from typing import Dict, Type
 
 from pymongo import MongoClient
 from pymongo.collection import Collection
 
-from src.collector import Collector, WbFinDoc, TestCollector
-from src.utils import to_datetime
-from task import Task
+from shop.collector import Collector, WbFinDoc, TestCollector
+from shop.utils import to_datetime, Task
 
 __all__ = ['get_runner']
 
