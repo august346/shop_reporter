@@ -1,4 +1,7 @@
 import os
+from http import HTTPStatus
+from typing import Dict
+from uuid import uuid4
 
 from flask import request
 from flask_restful import abort
@@ -10,6 +13,8 @@ MINIO_SECRET_KEY = os.environ['MINIO_SECRET_KEY']
 
 MINIO_BUCKET_CLIENT = os.environ['MINIO_BUCKET_CLIENT']
 MINIO_BUCKET_RESPONSE = os.environ['MINIO_BUCKET_RESPONSE']
+
+MAX_FILE_SIZE = 200_000
 
 client = Minio(
     MINIO_URL,
@@ -23,17 +28,28 @@ for name in (MINIO_BUCKET_CLIENT, MINIO_BUCKET_RESPONSE):
         client.make_bucket(name)
 
 
-def save(_id: str):
-    file = request.files.get('file')
-    size = os.fstat(file.fileno()).st_size
+def save_files() -> Dict[str, str]:
+    files = {}
 
-    client.put_object(
-        bucket_name=MINIO_BUCKET_CLIENT,
-        object_name=_id,
-        data=file,
-        length=size,
-        content_type=file.content_type
-    )
+    for key, file in request.files.items():
+        file_id = str(uuid4())
+
+        size = os.fstat(file.fileno()).st_size
+
+        if size > MAX_FILE_SIZE or size == 0:
+            abort(HTTPStatus.REQUEST_ENTITY_TOO_LARGE)
+
+        client.put_object(
+            bucket_name=MINIO_BUCKET_CLIENT,
+            object_name=file_id,
+            data=file,
+            length=size,
+            content_type=file.content_type
+        )
+
+        files[key] = file_id
+
+    return files
 
 
 def get(_id: str):

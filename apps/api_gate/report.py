@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 import requests
 from flask import Blueprint, request, current_app
 from flask_restful import Api, Resource
@@ -25,17 +23,13 @@ class Report(UrlMixin, Resource):
 
 class ReportList(UrlMixin, Resource):
     def post(self):
-        file_id = str(uuid4())
-        storage.save(file_id)
-
         json = {
             k: request.form[k]
             for k in ('platform', 'doc_type', 'date_from', 'date_to')
         }
-        json['files'] = {'price': file_id}
-        rsp: Response = requests.post(self.db_reports_url, json=json)
+        json['files'] = storage.save_files()
 
-        ...     # TODO run task
+        rsp: Response = requests.post(self.db_reports_url, json=json)
 
         return rsp.json(), rsp.status_code
 
