@@ -16,7 +16,7 @@ def index():
     return jsonify({'status': 'ok'}), HTTPStatus.OK
 
 
-@app.route('/reports/<string:_id>')
+@app.route('/document/<string:_id>')
 def report(_id: str):
     file_rsp = storage.get(_id)
 

@@ -17,8 +17,6 @@ services:
     restart: always
     env_file:
       .env
-    ports:
-    - 27017:27017
 
   minio:
     image: minio/minio
@@ -39,8 +37,8 @@ services:
     ports:
       - 8081:8081
 
-  api-gate:
-    build: ./apps/api_gate
+  gateway:
+    build: apps/gateway
     restart: always
     env_file:
       .env

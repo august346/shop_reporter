@@ -58,13 +58,16 @@ class Report:
         return self._collection.update_one(filters, updates).modified_count
 
     def get(self, oid: str):
-        return self.prepare_json(self._collection.find_one({'_id': ObjectId(oid)}))
+        return self.prepare_json(self._collection.find_one({'_id': ObjectId(oid)}, self.get_project()))
 
     def get_many(self):
         return list(map(
             self.prepare_json,
-            self._collection.find(request.json['filters'])
+            self._collection.find(request.json['filters'], self.get_project())
         ))
+
+    def get_project(self) -> dict:
+        return {k: 1 for k in ('state', 'platform', 'doc_type', 'date_from', 'date_to', 'files')}
 
     def prepare_json(self, document: Optional[dict]):
         if document is None:
