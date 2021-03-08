@@ -3,24 +3,14 @@ version: '3.1'
 services:
 
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq
     restart: always
     env_file:
       .env
-    ports:
-      - 15672:15672
 
   redis:
     image: redis
     restart: always
-
-#  postgres:
-#    image: postgres
-#    restart: always
-#    env_file:
-#      .env
-#    volumes:
-#      - ./tmp/db_volume:/var/lib/postgresql/data
 
   mongo:
     image: mongo
@@ -49,12 +39,6 @@ services:
     ports:
       - 8081:8081
 
-#  adminer:
-#    image: adminer
-#    restart: always
-#    ports:
-#      - 8080:8080
-
   api-gate:
     build: ./apps/api_gate
     restart: always
@@ -69,8 +53,6 @@ services:
   core:
     build: apps/core
     restart: always
-    ports:
-    - 5001:80
     env_file:
       .env
     links:
