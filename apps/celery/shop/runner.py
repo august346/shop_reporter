@@ -5,7 +5,7 @@ import requests
 from requests import Response
 
 from shop.collector import Collector, WbFinDoc, TestCollector
-from utils import Report, get_reports_url
+from utils import Report, get_reports_url, assert_patch
 
 __all__ = ['get_runner']
 
@@ -22,16 +22,13 @@ class Runner:
 
     def run(self):
         rows = self.collector.get_rows()
+        updates = {'$set': {'rows': rows}}
 
-        rsp: Response = requests.patch(f'{get_reports_url()}/{self.collector.report.id}', json={
-            'updates': {
-                '$set': {
-                    'state': 'collected',
-                    'rows': rows
-                }
-            }
-        })
-        assert rsp.status_code == HTTPStatus.OK, rsp.content.decode()
+        rsp: Response = requests.patch(
+            f'{get_reports_url()}/{self.collector.report.id}',
+            json={'updates': updates}
+        )
+        assert_patch(rsp)
 
         updates = {'state': 'updated'}
         for ind, row in enumerate(rows):
@@ -39,8 +36,11 @@ class Runner:
                 updates[f'rows.{ind}.{name}'] = value
         updates = {'$set': updates}
 
-        rsp: Response = requests.patch(f'{get_reports_url()}/{self.collector.report.id}', json={'updates': updates})
-        assert rsp.status_code == HTTPStatus.OK, rsp.content.decode()
+        rsp: Response = requests.patch(
+            f'{get_reports_url()}/{self.collector.report.id}',
+            json={'updates': updates}
+        )
+        assert_patch(rsp)
 
 
 class Platform:

@@ -6,7 +6,7 @@ from requests import Response
 
 from celery_app import app
 from shop.runner import get_runner
-from utils import Report, get_reports_url
+from utils import Report, get_reports_url, assert_patch
 
 
 @app.task
@@ -31,17 +31,20 @@ def execute(report_info: dict):
 
     runner = get_runner(report)
 
-    task_url = f'{get_reports_url()}/{report.id}/'
+    report_url = f'{get_reports_url()}/{report.id}/'
 
-    rsp: Response = requests.patch(task_url, json={
+    rsp: Response = requests.patch(report_url, json={
         'filters': {'state': 'init'},
         'updates': {'$set': {'state': 'process'}}
     })
-    assert rsp.status_code == HTTPStatus.OK, rsp.content.decode()
+    assert_patch(rsp)
 
     runner.run()
 
-    return requests.patch(task_url, json={
+    rsp: Response = requests.patch(report_url, json={
         'filters': {'state': 'process'},
         'updates': {'$set': {'state': 'complete'}}
-    }).json()
+    })
+    assert_patch(rsp)
+
+    return rsp.json()

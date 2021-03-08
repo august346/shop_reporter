@@ -84,17 +84,7 @@ class WbFinDoc(Collector):
 
         while _id is not None:
             rsp: Response = self._do_request(_id)
-
-            if rsp.status_code != HTTPStatus.OK:
-                import logging
-
-                logging.error((
-                    rsp,
-                    rsp.content.decode(),
-                        rsp.request,
-                    rsp.request.url
-                ))
-                raise AssertionError
+            assert rsp.status_code == HTTPStatus.OK, (rsp, rsp.content.decode(), rsp.request.url)
 
             json = rsp.json()
 

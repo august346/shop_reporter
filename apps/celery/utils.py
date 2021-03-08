@@ -1,8 +1,11 @@
 import time
 from dataclasses import dataclass
-from datetime import datetime, date
+from datetime import datetime
 from functools import partial, wraps
+from http import HTTPStatus
 from typing import Callable, Dict
+
+from requests import Response
 
 from celery_app import app
 
@@ -49,3 +52,9 @@ def paused(f: Callable = None, seconds: float = 1):
 
 def get_reports_url():
     return app.conf['CORE_REPORTS_URL']
+
+
+def assert_patch(rsp: Response):
+    assert rsp.status_code == HTTPStatus.OK, (rsp, rsp.content.decode(), rsp.request.url)
+    json = rsp.json()
+    assert json, f'Useless patch: counter={json}, url={rsp.request.url}'
