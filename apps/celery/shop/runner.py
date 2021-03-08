@@ -30,7 +30,7 @@ class Runner:
         )
         assert_patch(rsp)
 
-        updates = {'state': 'updated'}
+        updates = {}
         for ind, row in enumerate(rows):
             for name, value in self.collector.get_row_updates(row).items():
                 updates[f'rows.{ind}.{name}'] = value
