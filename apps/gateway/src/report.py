@@ -3,7 +3,7 @@ from flask import Blueprint, request, current_app
 from flask_restful import Api, Resource
 from requests import Response
 
-from src.storage import save_files
+from .storage import save_files
 
 report_bp = Blueprint('reports', __name__, url_prefix='/reports')
 api = Api(report_bp)

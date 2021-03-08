@@ -7,7 +7,7 @@ from typing import Callable, Dict
 
 from requests import Response
 
-from src.celery_app import app
+from .celery_app import app
 
 
 @dataclass

@@ -3,8 +3,8 @@ from typing import Dict, Type, List
 import requests
 from requests import Response
 
-from src.collector import Collector, WbFinDoc, TestCollector
-from src.utils import Report, get_reports_url, assert_patch
+from .collector import Collector, WbFinDoc, TestCollector
+from .utils import Report, get_reports_url, assert_patch
 
 __all__ = ['get_runner']
 
