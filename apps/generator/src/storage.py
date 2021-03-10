@@ -1,6 +1,5 @@
 import io
 import os
-from typing import IO
 
 from flask import abort
 from minio import Minio, S3Error

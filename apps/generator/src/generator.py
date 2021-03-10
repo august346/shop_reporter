@@ -34,7 +34,6 @@ def get_doc_generator(report: Report) -> Callable[[List[dict]], Iterable[Tuple[s
     }[report.platform][report.doc_type]
 
 
-# TODO need debug and correct
 def wb_fin_doc(rows: List[dict]) -> Iterable[Tuple[str, pd.DataFrame]]:
     def get_rows():
         for row in rows:

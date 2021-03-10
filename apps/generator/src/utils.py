@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Iterable
+from typing import Dict, List
 
 from flask import current_app
 
