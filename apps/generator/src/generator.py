@@ -40,9 +40,13 @@ def wb_fin_doc(rows: List[dict]) -> Iterable[Tuple[str, pd.DataFrame]]:
             for rep in row['reports']:
                 yield {**{key: value for key, value in row.items() if key != 'reports'}, **rep}
 
-    df = pd.DataFrame(get_rows()).groupby(
-        ['nm_id', 'barcode', 'sa_name', 'name', 'realizationreport_id']
-    ).apply(lambda x: pd.Series(dict(
+    df: pd.DataFrame = pd.DataFrame(get_rows())
+
+    name_field = ['name'] if 'name' in df.columns else []
+
+    group_fields = ['nm_id', 'barcode', 'sa_name', *name_field, 'realizationreport_id']
+
+    df = df.groupby(group_fields).apply(lambda x: pd.Series(dict(
         delivery=(x.delivery_rub.where(x.supplier_oper_name == 'Логистика')).sum(),
         income=(x.supplier_reward.where(x.supplier_oper_name == 'Продажа')).sum(),
         income_number=(x.quantity.where(x.supplier_oper_name == 'Продажа')).sum(),
