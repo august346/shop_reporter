@@ -12,7 +12,7 @@ MINIO_ACCESS_KEY = os.environ['MINIO_ACCESS_KEY']
 MINIO_SECRET_KEY = os.environ['MINIO_SECRET_KEY']
 
 MINIO_BUCKET_CLIENT = os.environ['MINIO_BUCKET_CLIENT']
-MINIO_BUCKET_RESPONSE = os.environ['MINIO_BUCKET_RESPONSE']
+MINIO_BUCKET_DOC = os.environ['MINIO_BUCKET_DOC']
 
 MAX_FILE_SIZE = 200_000
 
@@ -23,7 +23,7 @@ client = Minio(
     secure=False
 )
 
-for bucket_name in (MINIO_BUCKET_CLIENT, MINIO_BUCKET_RESPONSE):
+for bucket_name in (MINIO_BUCKET_CLIENT, MINIO_BUCKET_DOC):
     if not client.bucket_exists(bucket_name):
         client.make_bucket(bucket_name)
 
@@ -54,6 +54,6 @@ def save_files() -> Dict[str, str]:
 
 def get(file_id: str):
     try:
-        return client.get_object(MINIO_BUCKET_RESPONSE, file_id)
+        return client.get_object(MINIO_BUCKET_DOC, file_id)
     except S3Error:
         return None

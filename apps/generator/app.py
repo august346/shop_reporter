@@ -10,10 +10,10 @@ app = Flask(__name__)
 app.config.from_object('config')
 
 
-@app.route('/gen/<string:report_id>')
+@app.route('/gen/<string:report_id>/', methods=['POST'])
 def gen(report_id: str):
-    rsp = requests.get(f'{get_reports_url()}/{report_id}/')
-    assert rsp.status_code == HTTPStatus.OK
+    rsp = requests.get(f'{get_reports_url()}{report_id}/', json={'full': True})
+    assert rsp.status_code == HTTPStatus.OK, rsp.content.decode()
 
     file_id = generator.gen(Report(**rsp.json()))
 

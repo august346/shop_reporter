@@ -1,9 +1,8 @@
 import os
 import time
-from datetime import datetime
 from functools import lru_cache
 from http import HTTPStatus
-from typing import List, Dict, Any, Iterable
+from typing import List, Dict, Any, Iterable, Union
 
 import requests
 from bs4 import BeautifulSoup
@@ -49,37 +48,31 @@ class WbFinDoc(Collector):
         'realizationreport_id', 'order_dt', 'sale_dt', 'supplier_reward', 'supplier_oper_name', 'quantity',
         'delivery_rub'
     )
-    datetime_keys = ('order_dt', 'sale_dt',)
 
     def get_rows(self) -> List[dict]:
         return self._get_aggregated()
 
     def _get_aggregated(self) -> List[dict]:
-        result = {}
+        result: Dict[str, dict] = {}
 
         for data in self._get_payloads():
-            barcode = data['barcode']
+            nm_id: str = data['nm_id']
 
-            if barcode not in result:
-                result[barcode] = self._get_common_fields(data)
-                result[barcode]['reports'] = []
+            if nm_id not in result:
+                result[nm_id] = self._get_common_fields(data)
+                result[nm_id]['reports'] = []
 
-            result[barcode]['reports'].append(self._get_unique_fields(data))
+            result[nm_id]['reports'].append(self._get_unique_fields(data))
 
         return list(result.values())
 
-    def _get_common_fields(self, data: dict):
+    def _get_common_fields(self, data: dict) -> Dict[str, Union[str, int, float]]:
         return {k: data[k] for k in self.common_keys}
 
     def _get_unique_fields(self, data: dict):
-        result = {k: data[k] for k in self.unique_keys}
+        return {k: data[k] for k in self.unique_keys}
 
-        for key in self.datetime_keys:
-            result[key] = datetime.fromisoformat(result[key])
-
-        return result
-
-    def _get_payloads(self) -> Iterable[dict]:
+    def _get_payloads(self) -> Iterable[Dict[str, Union[str, int, float]]]:
         _id = 0
 
         while _id is not None:

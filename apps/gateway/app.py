@@ -17,13 +17,16 @@ def index():
     return jsonify({'status': 'ok'}), HTTPStatus.OK
 
 
-@app.route('/document/<string:report_id>')
+@app.route('/document/<string:report_id>/')
 def report(report_id: str):
     file_rsp = storage.get(report_id)
 
     if file_rsp is None:
         rsp: requests.Response = requests.post(get_gen_url(report_id))
-        assert rsp.status_code == HTTPStatus.OK, rsp.content.decode()
+        assert rsp.status_code == HTTPStatus.OK, (rsp.request.url, rsp.content.decode())
+
+        import logging
+        logging.error(rsp.json())
 
         file_rsp = storage.get(rsp.json())
 
@@ -35,7 +38,7 @@ def report(report_id: str):
 
 
 def get_gen_url(report_id: str):
-    return f'{app.config["CORE_REPORTS_URL"]}/{report_id}/'
+    return f'{app.config["GENERATOR_URL"]}{report_id}/'
 
 
 if __name__ == '__main__':

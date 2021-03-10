@@ -1,3 +1,4 @@
+import io
 import os
 from typing import IO
 
@@ -25,15 +26,15 @@ for bucket_name in (MINIO_BUCKET_CLIENT, MINIO_BUCKET_DOC):
         client.make_bucket(bucket_name)
 
 
-def save(name: str, file: IO) -> None:
-    size = os.fstat(file.fileno()).st_size
+def save(name: str, file: io.BytesIO) -> None:
+    size = file.getbuffer().nbytes
 
     client.put_object(
         bucket_name=MINIO_BUCKET_DOC,
         object_name=name,
         data=file,
         length=size,
-        content_type='...'  # TODO
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
 
 

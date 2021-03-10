@@ -63,4 +63,3 @@ platforms: Dict[str, Type[Platform]] = {
     'test': Test,
     'wb': WB
 }
-

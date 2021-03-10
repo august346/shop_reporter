@@ -20,12 +20,6 @@ class Report:
     def id(self):
         return self._id
 
-    @property
-    def rows_for_pd(self) -> Iterable[dict]:
-        for row in self.rows:
-            for rep in row['reports']:
-                yield {**{key: value for key, value in row.items() if key != 'reports'}, **rep}
-
 
 def get_reports_url():
     return current_app.config['CORE_REPORTS_URL']
