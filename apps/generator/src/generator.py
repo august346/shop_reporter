@@ -14,8 +14,10 @@ def gen(report: Report) -> str:
 
     output: io.BytesIO = io.BytesIO()
 
-    for sheet_name, df in get_doc_generator(report)(report.rows):   # type: str, pd.DataFrame
-        df.to_excel(output, sheet_name)
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        for sheet_name, df in get_doc_generator(report)(report.rows):
+            df.to_excel(writer, sheet_name)
+        writer.save()
 
     output.seek(0, 0)
     storage.save(file_id, output)
@@ -40,18 +42,23 @@ def wb_fin_doc(rows: List[dict]) -> Iterable[Tuple[str, pd.DataFrame]]:
             for rep in row['reports']:
                 yield {**{key: value for key, value in row.items() if key != 'reports'}, **rep}
 
+    def get_apply(x: pd.DataFrame):
+        return pd.Series(dict(
+            delivery=(x.delivery_rub.where(x.supplier_oper_name == 'Логистика')).sum(),
+            income=(x.supplier_reward.where(x.supplier_oper_name == 'Продажа')).sum(),
+            income_number=(x.quantity.where(x.supplier_oper_name == 'Продажа')).sum(),
+            refund=(x.supplier_reward.where(x.supplier_oper_name == 'Возврат')).sum(),
+            refund_number=(x.quantity.where(x.supplier_oper_name == 'Возврат')).sum(),
+        ))
+
     df: pd.DataFrame = pd.DataFrame(get_rows())
 
-    name_field = ['name'] if 'name' in df.columns else []
+    group_fields = ['nm_id', 'barcode', 'sa_name'] + (['name'] if 'name' in df.columns else [])
 
-    group_fields = ['nm_id', 'barcode', 'sa_name', *name_field, 'realizationreport_id']
+    total = df.groupby(group_fields).apply(get_apply)
 
-    df = df.groupby(group_fields).apply(lambda x: pd.Series(dict(
-        delivery=(x.delivery_rub.where(x.supplier_oper_name == 'Логистика')).sum(),
-        income=(x.supplier_reward.where(x.supplier_oper_name == 'Продажа')).sum(),
-        income_number=(x.quantity.where(x.supplier_oper_name == 'Продажа')).sum(),
-        refund=(x.supplier_reward.where(x.supplier_oper_name == 'Возврат')).sum(),
-        refund_number=(x.quantity.where(x.supplier_oper_name == 'Возврат')).sum(),
-    )))
+    yield 'sum', total.sum()
+    yield 'total', total
 
-    yield 'main', df
+    for _id in df.realizationreport_id.unique():
+        yield f'report_{_id}', df.groupby(group_fields).apply(get_apply)

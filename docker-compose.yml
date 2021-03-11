@@ -17,6 +17,8 @@ services:
     restart: always
     env_file:
       .env
+    ports:
+    - 27017:27017
 
   minio:
     image: minio/minio
@@ -60,7 +62,7 @@ services:
 
   core:
     build: apps/core
-    restart: always
+#    restart: always
     env_file:
       .env
     links:

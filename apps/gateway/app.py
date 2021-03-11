@@ -19,7 +19,7 @@ def index():
 
 @app.route('/document/<string:report_id>/')
 def report(report_id: str):
-    file_rsp = storage.get(report_id)
+    file_rsp = None if app.config['FORCE_GEN'] else storage.get(report_id)
 
     if file_rsp is None:
         rsp: requests.Response = requests.post(get_gen_url(report_id))
