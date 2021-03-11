@@ -11,6 +11,10 @@ services:
   redis:
     image: redis
     restart: always
+    ports:
+    - 6379:6379
+    volumes:
+      - ./tmp/redis:/data
 
   mongo:
     image: mongo
@@ -19,6 +23,8 @@ services:
       .env
     ports:
     - 27017:27017
+    volumes:
+      - ./tmp/mongodb:/data/db
 
   minio:
     image: minio/minio
@@ -48,6 +54,7 @@ services:
       - 5000:80
     links:
       - minio
+      - redis
       - core
       - generator
 
@@ -58,11 +65,12 @@ services:
       .env
     links:
       - minio
+      - redis
       - core
 
   core:
     build: apps/core
-#    restart: always
+    restart: always
     env_file:
       .env
     links:

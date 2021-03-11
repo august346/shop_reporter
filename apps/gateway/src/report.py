@@ -3,7 +3,7 @@ from flask import Blueprint, request, current_app
 from flask_restful import Api, Resource
 from requests import Response
 
-from .storage import save_files
+from .storage import save_all
 
 report_bp = Blueprint('reports', __name__, url_prefix='/reports')
 api = Api(report_bp)
@@ -27,7 +27,7 @@ class ReportList(UrlMixin, Resource):
             k: request.form[k]
             for k in ('platform', 'doc_type', 'date_from', 'date_to')
         }
-        json['files'] = save_files()
+        json['files'] = save_all()
 
         rsp: Response = requests.post(self.db_reports_url, json=json)
 
